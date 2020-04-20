@@ -1,0 +1,41 @@
+{
+  "name": "rollin-feature-flags",
+  "version": "1.0.1",
+  "description": "A simple React library for adding feature flags to your application.",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sweeneyrobb/rollin-feature-flags.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "types": "dist/index.d.ts",
+  "keywords": [
+    "react",
+    "feature",
+    "flags",
+    "hooks"
+  ],
+  "author": "Robert Sweeney",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sweeneyrobb/rollin-feature-flags/issues"
+  },
+  "homepage": "https://github.com/sweeneyrobb/rollin-feature-flags#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/react": "^16.9.34",
+    "rollup": "^2.6.1",
+    "rollup-plugin-typescript2": "^0.27.0",
+    "tslib": "^1.11.1",
+    "typescript": "^3.8.3"
+  },
+  "peerDependencies": {
+    "react": ">= 16.8.0"
+  }
+}
