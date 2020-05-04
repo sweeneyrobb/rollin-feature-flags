@@ -1,21 +1,32 @@
-import React, { createContext, useContext } from 'react'
+import React, { createContext, useContext, useState } from 'react'
 
 export const createFeatures = <T extends string>(featureFlags: T[]) => {
   type FeatureFlagKeys = typeof featureFlags[number]
-  type FeatureFlags = Record<FeatureFlagKeys, boolean | undefined>
+  type FeatureFlags = { [K in FeatureFlagKeys]: boolean | undefined }
 
-  const featureFlagContext = createContext({} as FeatureFlags)
+  const featureFlagContext = createContext(
+    {} as {
+      flags: FeatureFlags
+      setFlags: React.Dispatch<React.SetStateAction<FeatureFlags>>
+    }
+  )
 
-  const useFlags = (...keys: Array<FeatureFlagKeys>) => {
-    const flags = useContext(featureFlagContext)
+  const useFlags = (...keys: FeatureFlagKeys[]) => {
+    const { flags } = useContext(featureFlagContext)
 
     return keys.map(k => flags[k])
   }
 
   const useFlag = (key: FeatureFlagKeys) => {
-    const flags = useContext(featureFlagContext)
+    const { flags } = useContext(featureFlagContext)
 
     return flags[key]
+  }
+
+  const useSetFlags = () => {
+    const { setFlags } = useContext(featureFlagContext)
+
+    return setFlags
   }
 
   type FilterProps = {
@@ -29,9 +40,20 @@ export const createFeatures = <T extends string>(featureFlags: T[]) => {
     return <>{isOn && children}</>
   }
 
+  type FeatureFlagProviderProps = {
+    children?: React.ReactNode
+    initialFlags?: FeatureFlags
+  }
+  const FeatureFlagProvider = (props: FeatureFlagProviderProps) => {
+    const [flags, setFlags] = useState(() => ({} as FeatureFlags))
+    const { Provider } = featureFlagContext
+    return <Provider value={{ flags, setFlags }} {...props} />
+  }
+
   return {
     featureFlags,
-    featureFlagContext,
+    FeatureFlagProvider,
+    useSetFlags,
     useFlag,
     useFlags,
     Filter,
