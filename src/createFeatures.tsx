@@ -1,61 +1,87 @@
 import React, { createContext, useContext, useState } from 'react'
 
+const getFeatureOverrides = <K extends string>(keys: K[]) => {
+    return keys.reduce((p, c) => {
+        const value = window.localStorage.getItem(c)
+
+        return value === undefined || value === null
+            ? p
+            : {
+                  ...p,
+                  [c]: value.toLowerCase() === 'true',
+              }
+    }, {} as Record<K, boolean>)
+}
+
 export const createFeatures = <T extends string>(featureFlags: T[]) => {
-  type FeatureFlagKeys = typeof featureFlags[number]
-  type FeatureFlags = { [K in FeatureFlagKeys]: boolean | undefined }
+    type FeatureFlagKeys = typeof featureFlags[number]
+    type FeatureFlags = { [K in FeatureFlagKeys]: boolean | undefined }
 
-  const featureFlagContext = createContext(
-    {} as {
-      flags: FeatureFlags
-      setFlags: React.Dispatch<React.SetStateAction<FeatureFlags>>
+    const featureFlagContext = createContext(
+        {} as {
+            flags: FeatureFlags
+            setFlags: React.Dispatch<React.SetStateAction<FeatureFlags>>
+        }
+    )
+
+    const useFlags = (...keys: FeatureFlagKeys[]) => {
+        const { flags } = useContext(featureFlagContext)
+
+        return keys.map(k => flags[k])
     }
-  )
 
-  const useFlags = (...keys: FeatureFlagKeys[]) => {
-    const { flags } = useContext(featureFlagContext)
+    const useFlag = (key: FeatureFlagKeys) => {
+        const { flags } = useContext(featureFlagContext)
 
-    return keys.map(k => flags[k])
-  }
+        return flags[key]
+    }
 
-  const useFlag = (key: FeatureFlagKeys) => {
-    const { flags } = useContext(featureFlagContext)
+    const useSetFlags = () => {
+        const { setFlags } = useContext(featureFlagContext)
 
-    return flags[key]
-  }
+        return (flags: FeatureFlags) => {
+            const overrides = getFeatureOverrides<FeatureFlagKeys>(featureFlags)
 
-  const useSetFlags = () => {
-    const { setFlags } = useContext(featureFlagContext)
+            setFlags({
+                ...flags,
+                ...overrides,
+            })
+        }
+    }
 
-    return setFlags
-  }
+    type FilterProps = {
+        flag: FeatureFlagKeys
+        children?: React.ReactNode
+    }
 
-  type FilterProps = {
-    flag: FeatureFlagKeys
-    children?: React.ReactNode
-  }
+    const Filter = ({ flag, children }: FilterProps) => {
+        const isOn = useFlag(flag)
 
-  const Filter = ({ flag, children }: FilterProps) => {
-    const isOn = useFlag(flag)
+        return <>{isOn && children}</>
+    }
 
-    return <>{isOn && children}</>
-  }
+    type FeatureFlagProviderProps = {
+        children?: React.ReactNode
+        initialFlags?: FeatureFlags
+    }
+    const FeatureFlagProvider = ({
+        initialFlags,
+        ...props
+    }: FeatureFlagProviderProps) => {
+        const overrides = getFeatureOverrides(featureFlags)
+        const [flags, setFlags] = useState(
+            () => ({ ...initialFlags, ...overrides } as FeatureFlags)
+        )
+        const { Provider } = featureFlagContext
+        return <Provider value={{ flags, setFlags }} {...props} />
+    }
 
-  type FeatureFlagProviderProps = {
-    children?: React.ReactNode
-    initialFlags?: FeatureFlags
-  }
-  const FeatureFlagProvider = (props: FeatureFlagProviderProps) => {
-    const [flags, setFlags] = useState(() => ({} as FeatureFlags))
-    const { Provider } = featureFlagContext
-    return <Provider value={{ flags, setFlags }} {...props} />
-  }
-
-  return {
-    featureFlags,
-    FeatureFlagProvider,
-    useSetFlags,
-    useFlag,
-    useFlags,
-    Filter,
-  }
+    return {
+        featureFlags,
+        FeatureFlagProvider,
+        useSetFlags,
+        useFlag,
+        useFlags,
+        Filter,
+    }
 }
