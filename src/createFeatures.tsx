@@ -76,9 +76,12 @@ export const createFeatures = <T extends string>(featureFlags: T[]) => {
         return <Provider value={{ flags, setFlags }} {...props} />
     }
 
+    const FeatureFlagConsumer = featureFlagContext.Consumer
+
     return {
         featureFlags,
         FeatureFlagProvider,
+        FeatureFlagConsumer,
         useSetFlags,
         useFlag,
         useFlags,

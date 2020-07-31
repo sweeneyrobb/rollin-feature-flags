@@ -1,6 +1,6 @@
 {
   "name": "rollin-feature-flags",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A simple React library for adding feature flags to your application.",
   "main": "dist/index.js",
   "module": "dist/index.es.js",
